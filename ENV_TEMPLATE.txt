@@ -1,0 +1,25 @@
+# Copie este arquivo para .env e preencha com suas credenciais
+
+# RPC URLs
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR-API-KEY
+# Alternative: https://rpc.sepolia.org (public, no key needed)
+
+# Private Key (WITH 0x prefix)
+PRIVATE_KEY=0xyour_private_key_here
+
+# Etherscan API Key (for verification)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+
+# Contract Constructor Arguments (Sepolia Testnet)
+ETH_USD_FEED=0x694AA1769357215DE4FAC081bf1f309aDC325306
+UNIVERSAL_ROUTER=0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD
+PERMIT2=0x000000000022D473030F116dDEE9F6B43aC78BA3
+USDC=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+
+# Bank Configuration (in USDC decimals = 6)
+MAX_WITHDRAWAL=10000000000
+# 10,000 USDC = 10000 * 10^6
+
+BANK_CAP=1000000000000
+# 1,000,000 USDC = 1000000 * 10^6
+

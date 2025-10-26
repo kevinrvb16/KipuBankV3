@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 interface IUniversalRouter {
     function execute(bytes calldata commands, bytes[] calldata inputs, uint256 deadline) external payable;
@@ -314,7 +314,7 @@ contract KipuBankV3 is AccessControl, ReentrancyGuard {
         tokenSupported(token)
     {
         uint256 amountUsd = convertTokenToUsd(amount, token);
-        withinBankCapacity(amountUsd);
+        if (getTotalBankValueUsd() + amountUsd > bankCapUsd) revert BankCapacityExceeded();
         
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         
@@ -431,8 +431,7 @@ contract KipuBankV3 is AccessControl, ReentrancyGuard {
         uint256 minAmountOut,
         uint24 poolFee
     ) internal returns (uint256 amountOut) {
-        IERC20(tokenIn).safeApprove(address(universalRouter), 0);
-        IERC20(tokenIn).safeApprove(address(universalRouter), amountIn);
+        IERC20(tokenIn).forceApprove(address(universalRouter), amountIn);
         
         uint256 balanceBefore = IERC20(tokenOut).balanceOf(address(this));
         
@@ -585,14 +584,6 @@ contract KipuBankV3 is AccessControl, ReentrancyGuard {
     function getTotalUsers() external view returns (uint256 users) {
         return totalUsers;
     }
-    
-    function withdraw(uint256 amount) external validAmount(amount) {
-        withdrawEth(amount);
-    }
-    
-    function deposit() external payable {
-        depositEth();
-    }
 
     function addTokenSupport(address token, uint8 decimals) 
         external 
@@ -680,7 +671,7 @@ contract KipuBankV3 is AccessControl, ReentrancyGuard {
     function getTokenInfo(address token) 
         external 
         view 
-        returns (bool isSupported, uint8 decimals, uint256 totalDeposits, uint256 totalWithdrawals) 
+        returns (bool isSupported, uint8 decimals, uint256 tokenDeposits, uint256 tokenWithdrawals) 
     {
         TokenInfo memory info = supportedTokens[token];
         return (info.isSupported, info.decimals, info.totalDeposits, info.totalWithdrawals);
